@@ -1,0 +1,63 @@
+# Requirements
+Ubuntu server
+
+
+
+
+apt update -y
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+apt install unzip -y
+unzip awscliv2.zip
+sudo ./aws/install
+
+#KOPS BINARY SETUP 
+
+curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+mv kops-linux-amd64 kops
+chmod +x ./kops
+sudo mv ./kops /usr/local/bin/kops
+
+#KUBECTL BINARY SETUP
+
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+
+#configure the aws client to use your new IAM user
+aws configure       # use your access and secret key here
+aws iam list-users   # you should see a list of all your IAM users
+ 
+#Notes:
+
+#because "aws configure" doesn't export these vars for kops to use, we export them now
+
+export AWS_ACCESS_KEY_ID= (aws configure get aws_acess_key_id)
+export AWS_SECRET_ACCESS_KEY= (aws configure get aws_secret_access_key)
+
+#for a gossip-based cluster,make sure the name ends with k8s.local.for example
+
+export NAME=udaya.k8s.local
+export KOPS_STATE_STORE=s3://terra-s3-090425
+
+
+#CREATING YOUR FIRST CLUSTER
+kops create cluster --zones ap-south-1a ${NAME}
+
+Suggestions:
+ * list clusters with: kops get cluster
+ * edit this cluster with: kops edit cluster udaya.k8s.local
+ * edit your node instance group: kops edit ig --name=udaya.k8s.local nodes-ap-south-1a
+ * edit your control-plane instance group: kops edit ig --name=udaya.k8s.local control-plane-ap-south-1a
+
+Finally configure your cluster with: kops update cluster --name udaya.k8s.local --yes --admin
+
+Suggestions:
+ * validate cluster: kops validate cluster --wait 10m
+ * list nodes: kubectl get nodes --show-labels
+ * ssh to a control-plane node: ssh -i ~/.ssh/id_rsa ubuntu@
+ * the ubuntu user is specific to Ubuntu. If not using Ubuntu please use the appropriate user based on your OS.
+ * read about installing addons at: https://kops.sigs.k8s.io/addons.
+ 
+# DELETE A CLUSTER
+
+kops delete cluster --name=udaya.k8s.local --state=s3://terra-s3-090425 --yes
