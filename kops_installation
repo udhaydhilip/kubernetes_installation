@@ -1,9 +1,3 @@
-# Requirements
-Ubuntu server
-
-
-
-
 apt update -y
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 apt install unzip -y
@@ -31,13 +25,13 @@ aws iam list-users   # you should see a list of all your IAM users
 
 #because "aws configure" doesn't export these vars for kops to use, we export them now
 
-export AWS_ACCESS_KEY_ID= (aws configure get aws_acess_key_id)
-export AWS_SECRET_ACCESS_KEY= (aws configure get aws_secret_access_key)
+export AWS_ACCESS_KEY_ID= XXXXXXXXXXXXXXXXXXXXXXXX
+export AWS_SECRET_ACCESS_KEY= XXXXXXXXXXXXXXXXXXXXXXXX
 
 #for a gossip-based cluster,make sure the name ends with k8s.local.for example
 
 export NAME=udaya.k8s.local
-export KOPS_STATE_STORE=s3://terra-s3-090425
+export KOPS_STATE_STORE=s3://kops-s3-18-11-25
 
 
 #CREATING YOUR FIRST CLUSTER
@@ -46,8 +40,8 @@ kops create cluster --zones ap-south-1a ${NAME}
 Suggestions:
  * list clusters with: kops get cluster
  * edit this cluster with: kops edit cluster udaya.k8s.local
- * edit your node instance group: kops edit ig --name=udaya.k8s.local nodes-ap-south-1a
- * edit your control-plane instance group: kops edit ig --name=udaya.k8s.local control-plane-ap-south-1a
+ * edit your node instance group: kops edit ig --name=udaya.k8s.local nodes-ap-south-1a - (minimum t2.micro)
+ * edit your control-plane instance group: kops edit ig --name=udaya.k8s.local control-plane-ap-south-1a - (minimum t2.medium)
 
 Finally configure your cluster with: kops update cluster --name udaya.k8s.local --yes --admin
 
@@ -60,4 +54,4 @@ Suggestions:
  
 # DELETE A CLUSTER
 
-kops delete cluster --name=udaya.k8s.local --state=s3://terra-s3-090425 --yes
+kops delete cluster --name=udaya.k8s.local --state=s3://kops-s3-18-11-25 --yes
